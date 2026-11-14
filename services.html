@@ -1,0 +1,167 @@
+<!-- jay-site:f1f22505e12816f0 -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>发布前门禁服务 · 零依赖 CI 检查</title>
+<style>
+:root{--brand:#4A90E2;--brand2:#7FB3F5;--bg:#F5F9FE;--ink:#1c2b3a;--muted:#5b6b7c;--line:#dce7f5}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:0 22px 72px}
+header{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;padding:52px 22px 46px;margin-bottom:34px}
+header .wrap{padding-bottom:0}
+h1{margin:0 0 10px;font-size:30px;letter-spacing:.3px}
+.sub{opacity:.94;font-size:16px;margin:0}
+.badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.45);
+padding:4px 12px;border-radius:20px;font-size:13px;margin-bottom:16px}
+section{background:#fff;border:1px solid var(--line);border-radius:12px;padding:26px 28px;margin:0 0 22px}
+h2{font-size:21px;margin:0 0 16px;padding-left:11px;border-left:4px solid var(--brand)}
+h3{font-size:17px;margin:22px 0 8px}
+p{margin:10px 0}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:15px}
+th,td{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:#eef5fd}
+tr.default{background:#f2f8ff;font-weight:600}
+.repos{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:12px}
+.repo{display:block;text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:9px;
+padding:14px 16px;background:#fbfdff;transition:border-color .15s,transform .15s}
+.repo:hover{border-color:var(--brand);transform:translateY(-2px)}
+.repo strong{display:block;color:var(--brand);font-size:15px}
+.repo span{display:block;color:var(--muted);font-size:13px;margin-top:4px}
+article h1{font-size:23px;color:var(--ink);margin:0 0 14px}
+article h2{font-size:19px;margin:26px 0 10px}
+article p,article li{color:#2c3c4c}
+article pre{background:#0f1b2a;color:#d7e7f7;border-radius:8px;padding:14px 16px;overflow:auto;font-size:13px;line-height:1.6}
+article code{font-family:Consolas,Monaco,monospace}
+article blockquote{border-left:3px solid var(--brand2);margin:12px 0;padding:6px 14px;background:#f4f9ff;color:var(--muted)}
+.note{background:#f4f9ff;border:1px solid var(--line);border-radius:8px;padding:14px 16px;color:var(--muted);font-size:14px}
+footer{text-align:center;color:var(--muted);font-size:13px;margin-top:30px}
+a{color:var(--brand)}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<span class="badge">零依赖 · 纯本地 · 代码不出内网</span>
+<h1>发布前加两道闸</h1>
+<p class="sub">密钥泄露扫描 + 内容合规标注 + 一条命令的统一 PASS / BLOCK 结论。</p>
+</div></header>
+<div class="wrap">
+
+<section>
+<h2>能帮你解决什么</h2>
+<p>发版前最容易出问题的两类事：一是 API Key、Token 被顺手提交进仓库；二是运营文案里出现「保本保收益」「老师带单」这类违规表述。靠人肉 review 迟早会漏，所以把它们做成流水线里两个非零即红的步骤。</p>
+<p>三个工具全部是 <strong>Python 标准库、零第三方依赖、可完全离线运行</strong>，适合内网与信创环境。已有公开仓库与跑通的 CI 可供验证。</p>
+<div class="repos"><a class="repo" href="https://github.com/highLuo/toksentry" target="_blank" rel="noopener"><strong>toksentry</strong><span>密钥泄露扫描门禁 · 公开仓库 / CI 绿灯</span></a>
+<a class="repo" href="https://github.com/highLuo/fin-compliance" target="_blank" rel="noopener"><strong>fin-compliance</strong><span>内容合规标注扫描 · 公开仓库 / CI 绿灯</span></a>
+<a class="repo" href="https://github.com/highLuo/release_gate" target="_blank" rel="noopener"><strong>release_gate</strong><span>发布双闸组合 CLI · 公开仓库 / CI 绿灯</span></a></div>
+</section>
+
+<section>
+<h2>服务档位（建议价，可议）</h2>
+<table><thead><tr><th>档位</th><th>建议价</th><th>范围</th><th>说明</th></tr></thead>
+<tbody><tr><td>样单</td><td>¥300–500</td><td>单个仓库接入 1 个门禁 + 一页交接文档</td><td>首单验证用</td></tr>
+<tr class="default"><td>标准 · 默认</td><td>¥800–2,500</td><td>接入 + 忽略规则 + CI workflow + 实测证据</td><td>默认档</td></tr>
+<tr><td>组合</td><td>¥2,500–6,000</td><td>双闸 + 规则定制 + 三场景证据 + 录屏交接</td><td>范围较广</td></tr></tbody></table>
+<p class="note">价格与结算口径：平台担保交易按平台规则执行，是否含税与能否开票在下单前确认；按<strong>到手金额</strong>记账，不另加价。验收以交付清单齐备 + 一次可复跑的 CI 命中 / 放行实测为准。内容扫描是辅助标注，最终以人工复核为准，不提供合规承诺。</p>
+</section>
+
+<section>
+<h2>技术文：为什么坚持零依赖</h2>
+<article><p>发版前最容易翻车的，其实就两类事。</p>
+<p>一类是有人把 API key 顺手提交进了仓库。等 CI 跑完、镜像打好，密钥已经躺在 git 历史里，只能轮换、写事故报告，运气不好还得通知客户。</p>
+<p>另一类是运营写的推文、投教文案里冒出「保本保收益」「老师带单」这类话术。金融行业的红线摆在那，一旦发出去就是事故，删稿都来不及。</p>
+<p>这两类问题都不难查，难的是**每次都记得查**。靠人肉 review 迟早会漏，所以我把它们做成了流水线里的两个非零即红的步骤，加一个把两者串起来的组合命令。三个脚本都是纯 Python 标准库，没有第三方依赖。</p>
+<h2>一、密钥闸：toksentry</h2>
+<p>递归扫目录，把像密钥的东西揪出来。两套手段：</p>
+<li>**正则规则**：AWS Key、GitHub Token、Stripe Key、Google API Key、PEM 私钥、JWT 这些有固定形态，直接匹配。</li>
+<li>**香农熵**：拿不准的长随机串算一下信息熵，太&quot;乱&quot;就标出来让人确认。</li>
+<pre><code>python toksentry.py .                 # 扫整个仓库，命中即非零退出
+python toksentry.py . --format json   # 给别的工具消费
+python toksentry.py --self-test       # 不扫文件，只确认扫描器自己没坏</code></pre>
+<p>不想扫测试样例、示例代码，写个 `.toksentryignore`（gitignore 语法）排除掉。</p>
+<h2>二、内容闸：fin-compliance</h2>
+<p>金融营销话术的红线是明文规定：不能承诺收益、不能暗示荐股、不能夸大、引流要留痕、AI 生成内容要显著标识。这个脚本做**文本模式标注**，规则放在 `rules.json` 里：</p>
+<p>| 类别 | 级别 | 典型触发 |</p>
+<p>|---|---|---|</p>
+<p>| 收益承诺 | high | 保本保收益、无风险、稳赚 |</p>
+<p>| 荐股暗示 | high / medium | 必涨、主力建仓、老师带单 |</p>
+<p>| 夸大宣传 | medium | 最牛、第一、100% |</p>
+<p>| 引流话术 | medium | 加微信、扫码进群、免费领 |</p>
+<p>| AI 生成未标识 | low | 全文没有 AI 标识 |</p>
+<pre><code>python fin_compliance.py ./docs --fail-on high   # high 及以上拦下来
+python fin_compliance.py ./docs --fail-on none   # 只出报告，不拦</code></pre>
+<p>输出带行号和原文片段，能直接贴给合规同事复核。要按自己机构的口径增删规则，改 JSON 就行，不用动代码。</p>
+<p>这里得说清楚：它是**辅助标注工具**，不是法律意见，也不构成合规承诺。最终以人工复核和持牌法务意见为准。</p>
+<h2>三、合成一条命令：release-gate</h2>
+<p>两个工具各管一摊，发布前想一次查全，于是有了 `release-gate`：</p>
+<pre><code>python release_gate.py /path/to/repo
+python release_gate.py --code-dir ./src --content-dir ./docs --fail-on medium
+python release_gate.py --self-test</code></pre>
+<p>输出长这样：</p>
+<pre><code>① 密钥/令牌泄露扫描 (toksentry)
+未发现密钥泄露。
+
+② 金融内容合规标注扫描 (fin-compliance)
+  samples/violation.md:4 | high   | 收益承诺 | 年化 15%，保本保收益...
+  samples/violation.md:3 | high   | 荐股     | 这只票主力马上建仓，必涨！
+
+结论:
+  密钥泄露 : PASS (0 处)
+  内容合规 : FAIL (7 处，阈值 high)
+  总判定   : BLOCK 发布</code></pre>
+<p>任何一闸不过，退出码就是 `1`。全过才 `0`。CI 不需要看懂报告内容，看退出码就够了。</p>
+<h2>四、踩了一个自己挖的坑</h2>
+<p>接进 CI 第一次跑，`toksentry` 就把自己的仓库扫红了。命中位置是 README 里的赞助链接，规则报的是 `Generic High-Entropy`，香农熵 4.363。</p>
+<p>第一版兜底规则写得很糙：</p>
+<pre><code>{&quot;name&quot;: &quot;Generic High-Entropy&quot;, &quot;pattern&quot;: r&quot;[A-Za-z0-9+/]{40,}={0,2}&quot;}</code></pre>
+<p>只看长度，不看内容。于是 URL 路径、commit sha、一长串普通标识符全被当成疑似密钥。</p>
+<p>最省事的修法是在 `.toksentryignore` 里把 README 排除掉。但那是掩耳盗铃——README 里真写了密钥，就照样漏过去了。所以改的是规则：</p>
+<li>兜底规则加 `min_entropy: 4.5`，低于阈值的长串直接放过；</li>
+<li>匹配位置向左看 256 字符，取最后一个空白之后的片段，如果里面含 `://`，说明这串东西长在 URL 里，跳过。精确规则（AWS、GitHub、Stripe 那些）不受影响；</li>
+<li>顺手把 `re.findall` 换成 `re.finditer` 取 `group(0)`——PEM 规则里有个捕获组 `(RSA |EC |...)`，`findall` 会只返回组内容，命中记录里显示成 `&quot;RSA &quot;` 这种没用的东西。</li>
+<p>自检也改了：同一段随机串，一次独立出现、一次放在 URL 里，要求**只命中 1 条**。这样以后再动规则，误报抑制有没有退化一眼就能看出来。</p>
+<p>这类坑不写进文章里，看起来会更&quot;完美&quot;，但也就没什么参考价值了。</p>
+<h2>五、为什么坚持零依赖</h2>
+<p>不是洁癖，是三个很实际的约束：</p>
+<li>**CI 镜像你动不了**。别人流水线里装什么包不由你决定，少一个依赖就少一个装不上、版本冲突的坑。复制一个 `.py` 就能跑。</li>
+<li>**内网 / 信创环境不许联网装包**。金融、政企的打包机经常是离线的，甚至跑国产 OS。纯标准库刚好对口。</li>
+<li>**代码和文案不能外传**。扫描在本地完成，不经过任何 SaaS。这一点在合规评审时比功能表管用。</li>
+<p>代价也清楚：规则得自己跟着新令牌格式、新监管口径维护，没有商业平台那种 dashboard 和集中报表。它解决的是「发布前拦一道」，不是「全公司密钥治理」。</p>
+<h2>六、接进流水线</h2>
+<p>三个仓库的 Actions 现在都是跑通的绿灯，可以直接看 badge 和日志。最小配置：</p>
+<pre><code>name: Secret Scan
+on: [push, pull_request]
+jobs:
+  toksentry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: &quot;3.11&quot;
+      - name: Self-test
+        run: python toksentry.py --self-test
+      - name: Scan repository for leaked secrets
+        run: python toksentry.py . --format table</code></pre>
+<p>建议卡三个位置：提交前（pre-commit，反馈最快）、合并前（PR 检查，防本地跳过）、出包前（发布流水线兜底）。密钥这一道建议零容忍；合规那一道可以分阶段——内部评审用 `high` 拦硬伤，对外发布前再上 `medium` 收紧话术。</p>
+<p>三个仓库都是 MIT，clone 下来就能跑：</p>
+<li>[toksentry](https://github.com/highLuo/toksentry) — 密钥扫描</li>
+<li>[fin-compliance](https://github.com/highLuo/fin-compliance) — 金融文案合规标注</li>
+<li>[release_gate](https://github.com/highLuo/release_gate) — 组合门禁</li>
+<p>如果这套东西帮你拦下过一次事故，欢迎点个 Sponsor；规则集要跟着新令牌格式和监管口径持续更新，有人用才有动力维护。需要把它接进你们自己的流水线、或者规则要按内部口径改，看仓库 README，也可以直接留言聊。</p>
+<p>（文中工具做的是文本模式风险标注，不构成法律意见，不荐股，不接触任何账号与交易。正式合规以最新法规和持牌法务意见为准。）</p>
+<p>---</p></article>
+</section>
+
+<section>
+<h2>怎么联系 / 先看效果</h2>
+<p>三个仓库公开、CI 绿灯，命令都可以直接复制复现。建议先跑一次自检，确认符合你的环境，再谈接入范围。</p>
+<p>联系方式走 GitHub 仓库的 issues 或 Sponsors 页面（见上方三个链接）。本页面不放任何个人联系方式，也不收集访客信息。</p>
+</section>
+
+<footer>本页由 Jay / Growth Agent 自动维护 · 内容仅作技术说明，不构成投资建议或合规承诺</footer>
+</div>
+</body>
+</html>
