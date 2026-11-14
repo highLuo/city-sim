@@ -1,0 +1,168 @@
+<!-- jay-site:d33d362f754c5db8 -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>城市一日 · 打工人模拟器</title>
+<style>
+  :root{
+    --blue:#4A90E2; --blue2:#7FB3F5; --bg:#F5F9FE; --ink:#1f2d3d;
+    --card:#ffffff; --line:#e3ecf7; --ok:#2ecc71; --warn:#f39c12;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;justify-content:center;padding:18px}
+  .app{width:100%;max-width:480px}
+  .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .title{font-size:20px;font-weight:800;color:var(--blue)}
+  .clock{font-size:13px;color:#5a6b7b;background:#fff;border:1px solid var(--line);border-radius:20px;padding:6px 12px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:12px;box-shadow:0 4px 18px rgba(74,144,226,.06)}
+  .stage{font-size:13px;color:var(--blue);font-weight:700;margin-bottom:6px}
+  .event{font-size:16px;line-height:1.6;font-weight:600}
+  .meta{display:flex;justify-content:space-between;margin-top:10px;font-size:12px;color:#7a8aa0}
+  .bar{height:8px;background:#eef3fa;border-radius:6px;overflow:hidden;margin-top:8px}
+  .bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--blue2));width:100%}
+  .btns{display:flex;gap:10px;margin-top:14px}
+  button{flex:1;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;transition:.15s}
+  .primary{background:var(--blue);color:#fff}
+  .primary:active{transform:scale(.97)}
+  .ghost{background:#eef3fa;color:var(--blue)}
+  .money{font-variant-numeric:tabular-nums}
+  .log{font-size:12px;color:#8a9bb0;max-height:120px;overflow:auto;margin-top:8px;line-height:1.7}
+  .result h2{color:var(--blue);font-size:18px;margin-bottom:8px}
+  .result .line{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line);font-size:14px}
+  .share{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;border-radius:14px;padding:14px;margin-top:10px;text-align:center;font-weight:700}
+  .hidden{display:none}
+  .tag{display:inline-block;font-size:11px;background:#eef3fa;color:var(--blue);border-radius:8px;padding:2px 8px;margin:2px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="title">城市一日 · 打工人模拟器</div>
+    <div class="clock" id="clock">--:--:--</div>
+  </div>
+
+  <div id="intro" class="card">
+    <div class="stage">开场</div>
+    <div class="event" id="introText">点击开始，随机投胎到一个普通人的一天。</div>
+    <div class="btns"><button class="primary" onclick="start()">开始这一天</button></div>
+  </div>
+
+  <div id="play" class="card hidden">
+    <div class="stage" id="stageName">通勤</div>
+    <div class="event" id="eventText">……</div>
+    <div class="meta">
+      <span>现金 <b class="money" id="cash">0</b></span>
+      <span>精力 <b id="energy">100</b></span>
+      <span id="phase">第 1 / 6 步</span>
+    </div>
+    <div class="bar"><i id="bar"></i></div>
+    <div class="btns">
+      <button class="primary" onclick="next()">继续</button>
+    </div>
+    <div class="log" id="log"></div>
+  </div>
+
+  <div id="end" class="card result hidden">
+    <h2>这一天结束了</h2>
+    <div class="line"><span>身份</span><b id="rIdentity">—</b></div>
+    <div class="line"><span>到手现金</span><b class="money" id="rCash">—</b></div>
+    <div class="line"><span>房租缺口</span><b class="money" id="rGap">—</b></div>
+    <div class="line"><span>结局</span><b id="rEnd">—</b></div>
+    <div class="share" id="shareText">分享我的一天 →</div>
+    <div class="btns"><button class="ghost" onclick="location.reload()">再活一天</button></div>
+  </div>
+
+  <div style="font-size:11px;color:#9fb0c4;text-align:center;margin-top:6px">
+    纯免费互动 · 无账号 / 无充值 / 无聊天 · 数据仅存于本机浏览器
+  </div>
+</div>
+
+<script>
+// ===== 现实同步时钟 =====
+function tick(){
+  const d=new Date();
+  const p=n=>String(n).padStart(2,'0');
+  document.getElementById('clock').textContent=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+setInterval(tick,1000); tick();
+
+// ===== 随机事件卡（本地生活细节，不建模、不联网）=====
+const IDENT={
+  city:["二线老城","新一线新区","县城","省会郊区","工业镇"],
+  job:["便利店店员","网约车司机","实习程序员","房产中介","外卖骑手","客服","小厂文员"],
+  rent:["合租次卧","城中村单间","品牌公寓","和爸妈住"],
+};
+const EVENTS=[
+  {t:"通勤",e:["地铁挤成沙丁鱼，迟到扣了 20。", "赶上网约车拼单，省下 8 块。", "暴雨打不到车，步行 40 分钟。"]},
+  {t:"上班",e:["开会两小时，结论‘再想想’。", "独立搞定一个 bug，被夸了一句。", "临时加班，晚饭没了着落。"]},
+  {t:"交租",e:["房东催租短信，银行卡一紧。", "室友垫了半月，记了笔人情。", "押一付三到期，掏空存款。"]},
+  {t:"午饭",e:["楼下盖饭 18，加蛋 3。", "同事拼奶茶，没好意思不请。", "带了昨夜剩饭，0 元。"]},
+  {t:"下班",e:["被拉去团建，强行消费 50。", "提前溜了，去公园发呆半小时。", "接了个私活，赚 80。"]},
+  {t:"夜宵",e:["烧烤摊 35，抚慰一下。", "忍住没吃，明早胃舒服。", "便利店关东煮 12，热气腾腾。"]},
+];
+
+let S=null;
+function rnd(a){return a[Math.floor(Math.random()*a.length)]}
+function moneyDelta(s){ // 简单收支模型
+  if(s.includes("扣了"))return -20; if(s.includes("省下"))return +8;
+  if(s.includes("加班"))return -15; if(s.includes("夸了"))return +10;
+  if(s.includes("掏空"))return -600; if(s.includes("垫了"))return -150;
+  if(s.includes("盖饭"))return -18; if(s.includes("奶茶"))return -18;
+  if(s.includes("剩饭"))return 0; if(s.includes("团建"))return -50;
+  if(s.includes("溜了"))return 0; if(s.includes("私活"))return +80;
+  if(s.includes("烧烤"))return -35; if(s.includes("忍住"))return 0;
+  if(s.includes("关东煮"))return -12; if(s.includes("短信"))return -1200;
+  return 0;
+}
+function energyDelta(s){
+  if(s.includes("挤")||s.includes("暴雨")||s.includes("加班")||s.includes("团建"))return -12;
+  if(s.includes("夸")||s.includes("溜了")||s.includes("忍住")||s.includes("私活"))return +6;
+  return -4;
+}
+
+function start(){
+  S={
+    city:rnd(IDENT.city), job:rnd(IDENT.job), rent:rnd(IDENT.rent),
+    cash: Math.floor(Math.random()*2000)+300,
+    energy:100, i:0, log:[]
+  };
+  // 房租基线
+  const rentCost={ "合租次卧":800,"城中村单间":500,"品牌公寓":2200,"和爸妈住":0 }[S.rent];
+  S.rentCost=rentCost; S.cash-=Math.floor(rentCost/30); // 日均摊
+  document.getElementById('intro').classList.add('hidden');
+  document.getElementById('play').classList.remove('hidden');
+  document.getElementById('log').innerHTML='';
+  next(true);
+}
+function next(first){
+  if(!first) S.i++;
+  if(S.i>=EVENTS.length){ return finish(); }
+  const ev=EVENTS[S.i];
+  const txt=rnd(ev.e);
+  S.cash+=moneyDelta(txt); S.energy=Math.max(0,S.energy+energyDelta(txt));
+  S.log.unshift(`【${ev.t}】${txt}`);
+  document.getElementById('stageName').textContent=ev.t;
+  document.getElementById('eventText').textContent=txt;
+  document.getElementById('cash').textContent=S.cash;
+  document.getElementById('energy').textContent=S.energy;
+  document.getElementById('phase').textContent=`第 ${S.i+1} / ${EVENTS.length} 步`;
+  document.getElementById('bar').style.width=`${Math.round((S.i+1)/EVENTS.length*100)}%`;
+  document.getElementById('log').innerHTML=S.log.slice(0,6).map(x=>`· ${x}`).join('<br>');
+}
+function finish(){
+  document.getElementById('play').classList.add('hidden');
+  document.getElementById('end').classList.remove('hidden');
+  const gap=S.rentCost - S.cash;
+  document.getElementById('rIdentity').textContent=`${S.city} · ${S.job} · ${S.rent}`;
+  document.getElementById('rCash').textContent=`¥${S.cash}`;
+  document.getElementById('rGap').textContent= gap>0?`还差 ¥${gap}`:`盈余 ¥${-gap}`;
+  let ending = S.cash<0 ? "月底入不敷出，下月继续熬" : (S.cash>1500?"小有结余，难得轻松一天":"刚好够花，平凡却踏实");
+  document.getElementById('rEnd').textContent=ending;
+  document.getElementById('shareText').textContent=
+    `我在「城市一日」是${S.city}的${S.job}，一天下来现金¥${S.cash} —— 来测测你的命？`;
+}
+</script>
+</body>
+</html>
