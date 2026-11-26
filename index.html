@@ -1,4 +1,4 @@
-<!-- jay-site:b478f9c67a33de25 -->
+<!-- jay-site:7b875bb2e1629298 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -43,13 +43,15 @@ button:disabled{opacity:.45;cursor:not-allowed;transform:none}
 .tab.on{background:var(--blue);color:#fff;border-color:var(--blue)}
 
 /* 街景 */
-.scene{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:linear-gradient(160deg,#eaf3ff,#dbeafe);min-height:330px;padding:10px}
+.scene{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:linear-gradient(160deg,#eaf3ff,#dbeafe);min-height:350px;padding:10px;perspective:900px}
 .scene.hasphoto{background-size:cover;background-position:center}
 .scene::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(245,249,254,.15),rgba(245,249,254,.82));pointer-events:none}
-.grid{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;z-index:1}
-.place{background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:12px;padding:9px 4px;text-align:center;cursor:pointer;min-height:88px;position:relative;transition:.15s}
-.place:hover{border-color:var(--blue);transform:translateY(-2px)}
-.place.here{outline:2px solid var(--blue);outline-offset:-2px}
+.scene .sh-label{position:absolute;top:8px;left:10px;z-index:3;font-size:11px;font-weight:800;color:var(--blue);background:rgba(255,255,255,.85);border-radius:8px;padding:3px 8px}
+.grid{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;z-index:1;transform:rotateX(7deg);transform-origin:center top;transition:transform .3s;transform-style:preserve-3d;padding-top:22px}
+.grid.flat{transform:none}
+.place{background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:12px;padding:9px 4px;text-align:center;cursor:pointer;min-height:92px;position:relative;transition:transform .18s,box-shadow .18s;box-shadow:0 5px 0 #d6e2f0,0 9px 14px rgba(74,144,226,.15)}
+.place:hover{border-color:var(--blue);transform:translateZ(14px) translateY(-2px);box-shadow:0 12px 0 #cbdcf0,0 18px 22px rgba(74,144,226,.22)}
+.place.here{outline:2px solid var(--blue);outline-offset:-2px;box-shadow:0 5px 0 #bcd6f5,0 9px 16px rgba(74,144,226,.28)}
 .place .ic{font-size:26px;line-height:1}
 .place .nm{font-size:11px;font-weight:700;margin-top:4px}
 .place .sub{font-size:9px;color:var(--muted);margin-top:1px}
@@ -112,13 +114,13 @@ button:disabled{opacity:.45;cursor:not-allowed;transform:none}
 <body>
 <div class="app">
   <div class="top">
-    <div class="title">城市模拟器 V2 · 一日生活沙盘</div>
+    <div class="title">城市模拟器 V2.1 · 上海一日</div>
     <div class="clock" id="clock">--:--:--</div>
   </div>
 
   <div id="intro" class="card">
     <div class="stage">开场 · 选择出身</div>
-    <div class="event" style="margin-bottom:10px">你将在虚构街区里度过一天：打工、进货、生产、摆摊、和街坊打交道。22:00 收摊结算。所有数据只留本机。</div>
+    <div class="event" style="margin-bottom:10px">你将在上海风格的虚构街区里度过一天：石库门起床、南京路进货、弄堂灶披间做生煎、豫园夜市摆摊、和街坊打交道。22:00 收摊结算。街区为主题氛围，非真实地图；所有数据只留本机。</div>
     <div id="identityOpts" class="opts"></div>
     <div class="row" style="margin-top:10px">
       <button class="primary grow" onclick="startGame()">开始这一天</button>
@@ -147,9 +149,11 @@ button:disabled{opacity:.45;cursor:not-allowed;transform:none}
 
     <div id="tabScene" class="card">
       <div class="scene" id="scene">
+        <div class="sh-label">上海 · 虚构街区沙盘（非真实地图）</div>
         <div class="grid" id="grid"></div>
         <div class="photo-bar">
           <button class="ghost mini" onclick="document.getElementById('photoInput').click()">📷 上传街景照片</button>
+          <button class="ghost mini" onclick="toggle3D()" id="btn3D">🔲 切平面</button>
           <button class="ghost mini" onclick="clearPhoto()">清除照片</button>
         </div>
         <div class="privacy">隐私：照片经压缩后仅存本机浏览器，不上传、不读取位置信息。可随时一键清除。</div>
@@ -227,36 +231,36 @@ const RECIPES = [
 ];
 // 场所（抽象虚构，无真实地图/地名）
 const PLACES = [
-  {id:'home',    name:'出租屋',   icon:'🏠', type:'rest',    sub:'睡觉+60精力'},
-  {id:'shop',    name:'批发店',   icon:'🏪', type:'shop',    sub:'进原料'},
-  {id:'kitchen', name:'共享厨房', icon:'🍳', type:'produce', sub:'生产'},
-  {id:'studio',  name:'创作工位', icon:'💻', type:'produce', sub:'创作'},
-  {id:'stall',   name:'夜市摊位', icon:'🎪', type:'stall',   sub:'经营'},
-  {id:'job',     name:'零工站',   icon:'🧰', type:'job',     sub:'打工赚钱'},
-  {id:'park',    name:'街心公园', icon:'🌳', type:'rest',    sub:'散步'}
+  {id:'home',    name:'石库门·阁楼', icon:'🏠', type:'rest',    sub:'睡觉+60精力'},
+  {id:'shop',    name:'南京路·商铺', icon:'🏪', type:'shop',    sub:'进原料'},
+  {id:'kitchen', name:'弄堂·灶披间', icon:'🍳', type:'produce', sub:'生产'},
+  {id:'studio',  name:'武康路·工作室', icon:'💻', type:'produce', sub:'创作'},
+  {id:'stall',   name:'豫园·夜市摊', icon:'🎪', type:'stall',   sub:'经营'},
+  {id:'job',     name:'陆家嘴·零工', icon:'🧰', type:'job',     sub:'打工赚钱'},
+  {id:'park',    name:'外滩·滨江道', icon:'🌳', type:'rest',    sub:'散步'}
 ];
 // NPC（脚本虚拟角色，非真人；按作息时段出现在不同场所）
 const NPCS = [
-  {id:'wang', name:'王姐', icon:'👩‍🍳', job:'早餐店老板', industry:'餐饮', trait:'热心',
+  {id:'wang', name:'王阿姨', icon:'👩‍🍳', job:'弄堂生煎摊主', industry:'餐饮', trait:'热心',
    need:['flour','bread'], schedule:{morning:'kitchen',noon:'kitchen',afternoon:'stall',evening:'stall'},
-   greet:'小伙子早啊！要面粉找我，我这儿货源稳。', intel:'最近面粉紧俏，面包能卖好价钱。',
-   help:'帮我把这袋面粉搬一下？我这腰不行啦。', trade:'面粉我这儿有，价格好说。'},
-  {id:'li', name:'老李', icon:'🧔', job:'批发商', industry:'零售', trait:'精明',
+   greet:'小囡早啊！要面粉找我，阿拉这货源稳额。', intel:'最近面粉紧俏，生煎面包能卖好价钱。',
+   help:'帮我把这袋面粉搬进灶披间？阿拉腰不行啦。', trade:'面粉阿拉这儿有，价格好商量。'},
+  {id:'li', name:'老李', icon:'🧔', job:'南京路批发部', industry:'零售', trait:'精明',
    need:['goods','giftbox'], schedule:{morning:'shop',noon:'shop',afternoon:'shop',evening:'park'},
-   greet:'小商品要多少？量大从优。', intel:'小商品今天平稳，礼盒倒是走俏。',
-   help:'帮我把箱子码一下，回头给你个好价。', trade:'小商品管够，看你诚心不诚心。'},
-  {id:'chen', name:'小陈', icon:'🛵', job:'骑手', industry:'物流', trait:'爽快',
+   greet:'小商品要多少？量大从优，阿拉实在人。', intel:'小商品今天平稳，礼盒倒是走俏。',
+   help:'帮我把箱子码一下，回头给你个好价钿。', trade:'小商品管够，看侬诚心不诚心。'},
+  {id:'chen', name:'小陈', icon:'🛵', job:'外滩跑单骑手', industry:'物流', trait:'爽快',
    need:['bread','giftbox'], schedule:{morning:'stall',noon:'job',afternoon:'job',evening:'stall'},
-   greet:'兄弟跑单呢？来个面包垫垫。', intel:'晚上夜市人最多，面包好卖。',
-   help:'我这单赶时间，帮我送下？谢啦！', trade:'面包我收，礼盒也行。'},
-  {id:'may', name:'阿May', icon:'👩‍💻', job:'自由撰稿人', industry:'内容', trait:'文艺',
+   greet:'兄弟跑单呢？来个面包垫垫肚皮。', intel:'晚上豫园夜市人最多，面包好卖。',
+   help:'阿拉这单赶时间，帮衬送一下？谢啦！', trade:'面包阿拉收，礼盒也行。'},
+  {id:'may', name:'阿May', icon:'👩‍💻', job:'武康路撰稿人', industry:'内容', trait:'文艺',
    need:['material','content'], schedule:{morning:'studio',noon:'studio',afternoon:'park',evening:'studio'},
-   greet:'你也来搞创作？灵感比素材贵。', intel:'短内容这两天紧俏，稿酬不错。',
-   help:'帮我找下拍摄素材呗，回头请你喝奶茶。', trade:'素材和成片我都收。'},
-  {id:'guard', name:'保安大叔', icon:'👮', job:'物业保安', industry:'服务', trait:'爱唠嗑',
+   greet:'侬也来搞创作？灵光比素材值铜钿。', intel:'短内容这两天紧俏，稿酬蛮好。',
+   help:'帮我寻点拍摄素材伐？回头请侬喝咖啡。', trade:'素材和成片阿拉都收。'},
+  {id:'guard', name:'保安大叔', icon:'👮', job:'石库门弄堂保安', industry:'服务', trait:'爱唠嗑',
    need:['giftbox','bread'], schedule:{morning:'home',noon:'park',afternoon:'park',evening:'home'},
-   greet:'上班去啊？注意身体。', intel:'公园中午人多，摊子摆那儿不错。',
-   help:'帮我看下门口包裹？我巡查一圈。', trade:'礼盒给我来一个，送人。'}
+   greet:'上班去啊？当心身体，外滩风大。', intel:'滨江道中午人多，摊子摆那边不错。',
+   help:'帮我看下门口包裹？阿拉巡查一圈。', trade:'礼盒给我来一个，送人蛮好。'}
 ];
 
 function phaseOf(min){
@@ -528,9 +532,9 @@ function load(){ try{ const v=localStorage.getItem(LS_KEY); return v?JSON.parse(
 function clearSave(){ try{ localStorage.removeItem(LS_KEY); }catch(e){} }
 
 const IDENT={
-  city:['二线老城','新一线新区','县城','省会郊区'],
-  job:['便利店店员','实习程序员','外卖骑手','小厂文员'],
-  home:['合租次卧','城中村单间','和爸妈住']
+  city:['上海·老城厢','上海·浦西','上海·浦东'],
+  job:['南京路营业员','陆家嘴程序员','外滩骑手','弄堂咖啡师'],
+  home:['石库门阁楼','老弄堂单间','和爸妈住']
 };
 
 function renderIdentityOpts(){
@@ -720,7 +724,7 @@ function showEnd(){
   $('rNet').textContent=`${net>=0?'+¥':'-¥'}${Math.abs(net)}`;
   $('rStats').textContent=`生产${S.stats.produced}件 / 售出${S.stats.sold}件 / 打工${S.stats.jobs}次 / 交谈${S.stats.talks}次`;
   $('rEnd').textContent=endingOf(S);
-  $('shareText').textContent=`我在「城市模拟器」是${S.identity.city}的${S.identity.job}，一天下来净收益 ${net>=0?'+¥':'-¥'}${Math.abs(net)} —— 来体验你的一天？`;
+  $('shareText').textContent=`我在「上海一日」是${S.identity.job}，在石库门与豫园间忙了一天，净收益 ${net>=0?'+¥':'-¥'}${Math.abs(net)} —— 来体验侬的一天？`;
   save();
 }
 
@@ -746,6 +750,13 @@ function onPhotoChange(e){
   r.readAsDataURL(f);
 }
 function clearPhoto(){ if(S){S.photo=null;save();renderScene();toast('照片已清除');} }
+let flat3D=false;
+function toggle3D(){
+  flat3D=!flat3D;
+  $('grid').classList.toggle('flat',flat3D);
+  $('btn3D').textContent=flat3D?'⬛ 切立体':'🔲 切平面';
+  toast(flat3D?'已切到平面视图':'已切到立体视图（轻微3D）');
+}
 
 // 启动：优先恢复本机存档
 (function init(){
