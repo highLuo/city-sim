@@ -1,168 +1,764 @@
-<!-- jay-site:d33d362f754c5db8 -->
+<!-- jay-site:b478f9c67a33de25 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>城市一日 · 打工人模拟器</title>
+<title>城市模拟器 V2 · 一日生活沙盘</title>
 <style>
-  :root{
-    --blue:#4A90E2; --blue2:#7FB3F5; --bg:#F5F9FE; --ink:#1f2d3d;
-    --card:#ffffff; --line:#e3ecf7; --ok:#2ecc71; --warn:#f39c12;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;justify-content:center;padding:18px}
-  .app{width:100%;max-width:480px}
-  .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-  .title{font-size:20px;font-weight:800;color:var(--blue)}
-  .clock{font-size:13px;color:#5a6b7b;background:#fff;border:1px solid var(--line);border-radius:20px;padding:6px 12px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:12px;box-shadow:0 4px 18px rgba(74,144,226,.06)}
-  .stage{font-size:13px;color:var(--blue);font-weight:700;margin-bottom:6px}
-  .event{font-size:16px;line-height:1.6;font-weight:600}
-  .meta{display:flex;justify-content:space-between;margin-top:10px;font-size:12px;color:#7a8aa0}
-  .bar{height:8px;background:#eef3fa;border-radius:6px;overflow:hidden;margin-top:8px}
-  .bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--blue2));width:100%}
-  .btns{display:flex;gap:10px;margin-top:14px}
-  button{flex:1;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;transition:.15s}
-  .primary{background:var(--blue);color:#fff}
-  .primary:active{transform:scale(.97)}
-  .ghost{background:#eef3fa;color:var(--blue)}
-  .money{font-variant-numeric:tabular-nums}
-  .log{font-size:12px;color:#8a9bb0;max-height:120px;overflow:auto;margin-top:8px;line-height:1.7}
-  .result h2{color:var(--blue);font-size:18px;margin-bottom:8px}
-  .result .line{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line);font-size:14px}
-  .share{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;border-radius:14px;padding:14px;margin-top:10px;text-align:center;font-weight:700}
-  .hidden{display:none}
-  .tag{display:inline-block;font-size:11px;background:#eef3fa;color:var(--blue);border-radius:8px;padding:2px 8px;margin:2px}
+:root{
+  --blue:#4A90E2; --blue2:#7FB3F5; --bg:#F5F9FE; --ink:#1f2d3d;
+  --card:#ffffff; --line:#e3ecf7; --ok:#2ecc71; --warn:#f39c12; --danger:#e74c3c;
+  --muted:#7a8aa0; --soft:#eef3fa;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;justify-content:center;padding:12px}
+.app{width:100%;max-width:560px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px}
+.title{font-size:18px;font-weight:800;color:var(--blue)}
+.clock{font-size:12px;color:#5a6b7b;background:#fff;border:1px solid var(--line);border-radius:20px;padding:6px 10px;white-space:nowrap}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:0 4px 18px rgba(74,144,226,.06)}
+.hidden{display:none!important}
+button{border:none;border-radius:11px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s}
+button:active{transform:scale(.97)}
+button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.primary{background:var(--blue);color:#fff}
+.ghost{background:var(--soft);color:var(--blue)}
+.mini{padding:7px 10px;font-size:12px;border-radius:9px}
+.row{display:flex;gap:8px;align-items:center}
+.wrap{flex-wrap:wrap}
+.grow{flex:1}
+
+/* 状态条 */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:11px;padding:8px 4px;text-align:center}
+.stat .v{font-size:15px;font-weight:800;color:var(--blue);font-variant-numeric:tabular-nums}
+.stat .k{font-size:10px;color:var(--muted);margin-top:2px}
+.bar{height:7px;background:var(--soft);border-radius:6px;overflow:hidden;margin-top:8px}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--blue2));width:0%;transition:width .3s}
+
+/* 标签页 */
+.tabs{display:flex;gap:5px;margin-bottom:10px}
+.tab{flex:1;background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 4px;text-align:center;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer}
+.tab.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* 街景 */
+.scene{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:linear-gradient(160deg,#eaf3ff,#dbeafe);min-height:330px;padding:10px}
+.scene.hasphoto{background-size:cover;background-position:center}
+.scene::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(245,249,254,.15),rgba(245,249,254,.82));pointer-events:none}
+.grid{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;z-index:1}
+.place{background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:12px;padding:9px 4px;text-align:center;cursor:pointer;min-height:88px;position:relative;transition:.15s}
+.place:hover{border-color:var(--blue);transform:translateY(-2px)}
+.place.here{outline:2px solid var(--blue);outline-offset:-2px}
+.place .ic{font-size:26px;line-height:1}
+.place .nm{font-size:11px;font-weight:700;margin-top:4px}
+.place .sub{font-size:9px;color:var(--muted);margin-top:1px}
+.npc-dot{position:absolute;top:4px;right:4px;font-size:15px;cursor:pointer;filter:drop-shadow(0 1px 2px rgba(0,0,0,.2))}
+.npc-dot:hover{transform:scale(1.2)}
+.you{position:absolute;bottom:4px;left:4px;font-size:14px}
+.photo-bar{position:relative;z-index:2;display:flex;gap:6px;margin-top:8px}
+.photo-bar button{flex:1}
+.privacy{font-size:10px;color:#5a6b7b;background:rgba(255,255,255,.9);border-radius:8px;padding:6px 8px;margin-top:6px;z-index:2;position:relative}
+
+/* 面板 */
+.panel-title{font-size:15px;font-weight:800;color:var(--blue);margin-bottom:4px}
+.panel-desc{font-size:12px;color:var(--muted);margin-bottom:10px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.opts.one{grid-template-columns:1fr}
+.opt{background:var(--soft);border-radius:10px;padding:10px;text-align:left;font-size:12px;cursor:pointer;border:1px solid transparent}
+.opt:hover{border-color:var(--blue)}
+.opt b{display:block;color:var(--blue);font-size:13px}
+.opt span{color:var(--muted)}
+.close{float:right;background:none;color:var(--muted);font-size:18px;padding:0 4px;cursor:pointer}
+
+/* 对话 */
+.bubble{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;font-size:14px;line-height:1.6}
+.bubble .who{font-size:12px;color:var(--blue);font-weight:800;margin-bottom:4px}
+.aff{font-size:11px;color:var(--muted)}
+
+/* 背包/账本/人物 */
+.item{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.item:last-child{border:none}
+.item .nm{font-weight:700}
+.item .sub{font-size:11px;color:var(--muted)}
+.item .qty{font-variant-numeric:tabular-nums;font-weight:800;color:var(--blue)}
+.led{font-size:12px;padding:7px 0;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;gap:8px}
+.led .t{color:var(--muted);white-space:nowrap}
+.led .n{flex:1}
+.led .a{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+.a.plus{color:var(--ok)}.a.minus{color:var(--danger)}
+.npc-card{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px dashed var(--line)}
+.npc-card:last-child{border:none}
+.npc-card .av{font-size:28px}
+.npc-card .info{flex:1}
+.npc-card .info b{font-size:13px}
+.npc-card .info .sub{font-size:11px;color:var(--muted)}
+.heart{font-size:11px;color:#e74c3c}
+
+/* 日志/提示 */
+.log{font-size:11px;color:var(--muted);max-height:88px;overflow:auto;line-height:1.7}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:rgba(31,45,61,.94);color:#fff;padding:10px 18px;border-radius:22px;font-size:13px;z-index:99;max-width:88%;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.stage{font-size:12px;color:var(--blue);font-weight:700;margin-bottom:6px}
+.event{font-size:15px;line-height:1.6;font-weight:600}
+.big-btn{width:100%;padding:14px;font-size:15px}
+
+/* 结算 */
+.result h2{color:var(--blue);font-size:19px;margin-bottom:10px;text-align:center}
+.line{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.share{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;border-radius:14px;padding:14px;margin-top:12px;text-align:center;font-weight:700;font-size:13px;line-height:1.6}
+.foot{font-size:10px;color:#9fb0c4;text-align:center;margin-top:8px;line-height:1.6}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="top">
-    <div class="title">城市一日 · 打工人模拟器</div>
+    <div class="title">城市模拟器 V2 · 一日生活沙盘</div>
     <div class="clock" id="clock">--:--:--</div>
   </div>
 
   <div id="intro" class="card">
-    <div class="stage">开场</div>
-    <div class="event" id="introText">点击开始，随机投胎到一个普通人的一天。</div>
-    <div class="btns"><button class="primary" onclick="start()">开始这一天</button></div>
+    <div class="stage">开场 · 选择出身</div>
+    <div class="event" style="margin-bottom:10px">你将在虚构街区里度过一天：打工、进货、生产、摆摊、和街坊打交道。22:00 收摊结算。所有数据只留本机。</div>
+    <div id="identityOpts" class="opts"></div>
+    <div class="row" style="margin-top:10px">
+      <button class="primary grow" onclick="startGame()">开始这一天</button>
+    </div>
+    <div class="foot">单机免费 · 无账号 / 无真人聊天 / 无真实资金 / 照片仅存本机</div>
   </div>
 
-  <div id="play" class="card hidden">
-    <div class="stage" id="stageName">通勤</div>
-    <div class="event" id="eventText">……</div>
-    <div class="meta">
-      <span>现金 <b class="money" id="cash">0</b></span>
-      <span>精力 <b id="energy">100</b></span>
-      <span id="phase">第 1 / 6 步</span>
+  <div id="game" class="hidden">
+    <div class="card">
+      <div class="stats">
+        <div class="stat"><div class="v" id="sCash">0</div><div class="k">现金 ¥</div></div>
+        <div class="stat"><div class="v" id="sEnergy">100</div><div class="k">精力</div></div>
+        <div class="stat"><div class="v" id="sSkill">1</div><div class="k">技能</div></div>
+        <div class="stat"><div class="v" id="sRep">50</div><div class="k">口碑</div></div>
+        <div class="stat"><div class="v" id="sTime">08:00</div><div class="k">游戏时钟</div></div>
+      </div>
+      <div class="bar"><i id="timeBar"></i></div>
     </div>
-    <div class="bar"><i id="bar"></i></div>
-    <div class="btns">
-      <button class="primary" onclick="next()">继续</button>
+
+    <div class="tabs">
+      <div class="tab on" data-tab="scene" onclick="switchTab('scene')">🗺️ 街区</div>
+      <div class="tab" data-tab="bag" onclick="switchTab('bag')">🎒 背包</div>
+      <div class="tab" data-tab="ledger" onclick="switchTab('ledger')">📒 账本</div>
+      <div class="tab" data-tab="people" onclick="switchTab('people')">👥 人物</div>
     </div>
-    <div class="log" id="log"></div>
+
+    <div id="tabScene" class="card">
+      <div class="scene" id="scene">
+        <div class="grid" id="grid"></div>
+        <div class="photo-bar">
+          <button class="ghost mini" onclick="document.getElementById('photoInput').click()">📷 上传街景照片</button>
+          <button class="ghost mini" onclick="clearPhoto()">清除照片</button>
+        </div>
+        <div class="privacy">隐私：照片经压缩后仅存本机浏览器，不上传、不读取位置信息。可随时一键清除。</div>
+        <input type="file" id="photoInput" accept="image/*" class="hidden" onchange="onPhotoChange(event)" />
+      </div>
+      <div id="panel" style="margin-top:10px"></div>
+    </div>
+
+    <div id="tabBag" class="card hidden">
+      <div class="panel-title">背包与库存</div>
+      <div class="panel-desc">原料可生产，成品可上架或卖给街坊。括号内为基准价。</div>
+      <div id="bagList"></div>
+      <div class="row" style="margin-top:10px">
+        <button class="ghost grow mini" onclick="opEat()">🍞 吃个面包(+20精力/10分钟)</button>
+      </div>
+    </div>
+
+    <div id="tabLedger" class="card hidden">
+      <div class="panel-title">今日账本（虚拟记账，不涉真实资金）</div>
+      <div id="ledgerList"></div>
+    </div>
+
+    <div id="tabPeople" class="card hidden">
+      <div class="panel-title">街区人物</div>
+      <div class="panel-desc">点击可对话。好感度影响交易价格与情报。</div>
+      <div id="peopleList"></div>
+    </div>
+
+    <div class="card">
+      <div class="row wrap">
+        <button class="ghost grow mini" id="btnWait" onclick="opWait()">⏳ 稍等(+30分钟)</button>
+        <button class="ghost grow mini" onclick="opRest()">🌳 散步(+25精力)</button>
+        <button class="primary grow mini" id="btnSettle" onclick="opSettle()">🌙 收摊结算</button>
+      </div>
+      <div class="log" id="log" style="margin-top:10px"></div>
+    </div>
   </div>
 
   <div id="end" class="card result hidden">
     <h2>这一天结束了</h2>
     <div class="line"><span>身份</span><b id="rIdentity">—</b></div>
-    <div class="line"><span>到手现金</span><b class="money" id="rCash">—</b></div>
-    <div class="line"><span>房租缺口</span><b class="money" id="rGap">—</b></div>
+    <div class="line"><span>现金结余</span><b id="rCash">—</b></div>
+    <div class="line"><span>库存估值</span><b id="rInv">—</b></div>
+    <div class="line"><span>净收益</span><b id="rNet">—</b></div>
+    <div class="line"><span>今日交易</span><b id="rStats">—</b></div>
     <div class="line"><span>结局</span><b id="rEnd">—</b></div>
     <div class="share" id="shareText">分享我的一天 →</div>
-    <div class="btns"><button class="ghost" onclick="location.reload()">再活一天</button></div>
-  </div>
-
-  <div style="font-size:11px;color:#9fb0c4;text-align:center;margin-top:6px">
-    纯免费互动 · 无账号 / 无充值 / 无聊天 · 数据仅存于本机浏览器
+    <div class="row" style="margin-top:12px">
+      <button class="primary grow" onclick="resetGame()">再活一天</button>
+    </div>
+    <div class="foot">自测结果见浏览器控制台（selfTest()）。本作无内购、无广告、无账号。</div>
   </div>
 </div>
 
 <script>
-// ===== 现实同步时钟 =====
+/* ==================== PURE LOGIC START (可独立自测，无 DOM 依赖) ==================== */
+const CAP = { cash:999999, qty:999, energy:100, reputation:100, startMinute:8*60, endMinute:22*60 };
+const clamp = (v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+const money = v => clamp(Math.round(v), -CAP.cash, CAP.cash);
+
+// 经济层：虚构商品表（基准价、类型）
+const GOODS = {
+  flour:   {name:'面粉',   price:5,  kind:'raw',     icon:'🌾'},
+  goods:   {name:'小商品', price:8,  kind:'raw',     icon:'📦'},
+  material:{name:'素材',   price:3,  kind:'raw',     icon:'🖼️'},
+  bread:   {name:'面包',   price:14, kind:'product', icon:'🍞'},
+  giftbox: {name:'礼盒',   price:22, kind:'product', icon:'🎁'},
+  content: {name:'短内容', price:40, kind:'product', icon:'🎬'}
+};
+// 生产链：原料→产出，耗时/精力/技能门槛
+const RECIPES = [
+  {id:'bread',  out:'bread',   qty:1, in:{flour:1},   minutes:30, energy:8,  skill:1, place:'kitchen', name:'烘焙面包'},
+  {id:'giftbox',out:'giftbox', qty:1, in:{goods:1},   minutes:15, energy:5,  skill:1, place:'kitchen', name:'包装礼盒'},
+  {id:'content',out:'content', qty:1, in:{material:1},minutes:60, energy:12, skill:2, place:'studio',  name:'创作短内容'}
+];
+// 场所（抽象虚构，无真实地图/地名）
+const PLACES = [
+  {id:'home',    name:'出租屋',   icon:'🏠', type:'rest',    sub:'睡觉+60精力'},
+  {id:'shop',    name:'批发店',   icon:'🏪', type:'shop',    sub:'进原料'},
+  {id:'kitchen', name:'共享厨房', icon:'🍳', type:'produce', sub:'生产'},
+  {id:'studio',  name:'创作工位', icon:'💻', type:'produce', sub:'创作'},
+  {id:'stall',   name:'夜市摊位', icon:'🎪', type:'stall',   sub:'经营'},
+  {id:'job',     name:'零工站',   icon:'🧰', type:'job',     sub:'打工赚钱'},
+  {id:'park',    name:'街心公园', icon:'🌳', type:'rest',    sub:'散步'}
+];
+// NPC（脚本虚拟角色，非真人；按作息时段出现在不同场所）
+const NPCS = [
+  {id:'wang', name:'王姐', icon:'👩‍🍳', job:'早餐店老板', industry:'餐饮', trait:'热心',
+   need:['flour','bread'], schedule:{morning:'kitchen',noon:'kitchen',afternoon:'stall',evening:'stall'},
+   greet:'小伙子早啊！要面粉找我，我这儿货源稳。', intel:'最近面粉紧俏，面包能卖好价钱。',
+   help:'帮我把这袋面粉搬一下？我这腰不行啦。', trade:'面粉我这儿有，价格好说。'},
+  {id:'li', name:'老李', icon:'🧔', job:'批发商', industry:'零售', trait:'精明',
+   need:['goods','giftbox'], schedule:{morning:'shop',noon:'shop',afternoon:'shop',evening:'park'},
+   greet:'小商品要多少？量大从优。', intel:'小商品今天平稳，礼盒倒是走俏。',
+   help:'帮我把箱子码一下，回头给你个好价。', trade:'小商品管够，看你诚心不诚心。'},
+  {id:'chen', name:'小陈', icon:'🛵', job:'骑手', industry:'物流', trait:'爽快',
+   need:['bread','giftbox'], schedule:{morning:'stall',noon:'job',afternoon:'job',evening:'stall'},
+   greet:'兄弟跑单呢？来个面包垫垫。', intel:'晚上夜市人最多，面包好卖。',
+   help:'我这单赶时间，帮我送下？谢啦！', trade:'面包我收，礼盒也行。'},
+  {id:'may', name:'阿May', icon:'👩‍💻', job:'自由撰稿人', industry:'内容', trait:'文艺',
+   need:['material','content'], schedule:{morning:'studio',noon:'studio',afternoon:'park',evening:'studio'},
+   greet:'你也来搞创作？灵感比素材贵。', intel:'短内容这两天紧俏，稿酬不错。',
+   help:'帮我找下拍摄素材呗，回头请你喝奶茶。', trade:'素材和成片我都收。'},
+  {id:'guard', name:'保安大叔', icon:'👮', job:'物业保安', industry:'服务', trait:'爱唠嗑',
+   need:['giftbox','bread'], schedule:{morning:'home',noon:'park',afternoon:'park',evening:'home'},
+   greet:'上班去啊？注意身体。', intel:'公园中午人多，摊子摆那儿不错。',
+   help:'帮我看下门口包裹？我巡查一圈。', trade:'礼盒给我来一个，送人。'}
+];
+
+function phaseOf(min){
+  if(min < 11*60) return 'morning';
+  if(min < 14*60) return 'noon';
+  if(min < 17*60) return 'afternoon';
+  return 'evening';
+}
+const PHASE_NAME = {morning:'早晨',noon:'中午',afternoon:'下午',evening:'夜晚'};
+const FLOW = {morning:0.8, noon:1.2, afternoon:0.9, evening:1.5};
+
+function makeState(identity, skill){
+  return {
+    identity: identity || {city:'二线老城', job:'实习程序员', home:'合租次卧'},
+    day:1, cash:500, startCash:500, energy:100,
+    skill: clamp(skill||1,1,3), reputation:50,
+    gameMinutes:CAP.startMinute, finished:false,
+    inventory:{flour:0,goods:0,material:0,bread:0,giftbox:0,content:0},
+    stall:{rented:false,listed:null},
+    affinity:{wang:0,li:0,chen:0,may:0,guard:0},
+    intel:{}, ledger:[], log:[],
+    stats:{produced:0,sold:0,jobs:0,talks:0},
+    photo:null, location:'home'
+  };
+}
+function ledgerAdd(s,type,item,qty,amount,note){
+  s.ledger.push({t:s.gameMinutes,type,item,qty,amount:money(amount),cash:money(s.cash),note});
+  if(s.ledger.length>400) s.ledger.shift();
+}
+function canSpendTime(s,minutes){ return !s.finished && s.gameMinutes + minutes <= CAP.endMinute; }
+function advanceTime(s,minutes){
+  s.gameMinutes = clamp(s.gameMinutes + minutes, CAP.startMinute, CAP.endMinute);
+  if(s.gameMinutes >= CAP.endMinute) s.finished = true;
+}
+function buy(s,item,qty){
+  qty = clamp(Math.floor(qty),1,CAP.qty);
+  const g = GOODS[item];
+  if(!g || g.kind!=='raw') return {ok:false,msg:'只能进货原料'};
+  const total = g.price*qty;
+  if(total > s.cash) return {ok:false,msg:'现金不足'};
+  if(!canSpendTime(s,10)) return {ok:false,msg:'今天太晚了'};
+  s.cash = money(s.cash-total);
+  s.inventory[item] = clamp((s.inventory[item]||0)+qty,0,CAP.qty);
+  advanceTime(s,10);
+  ledgerAdd(s,'buy',item,qty,-total,`进货 ${g.name} ×${qty}`);
+  return {ok:true,msg:`进货 ${g.name} ×${qty}，花费 ¥${total}`};
+}
+function produce(s,recipeId){
+  const r = RECIPES.find(x=>x.id===recipeId);
+  if(!r) return {ok:false,msg:'未知配方'};
+  if(s.skill < r.skill) return {ok:false,msg:`需要技能等级 ${r.skill}`};
+  if(s.energy < r.energy) return {ok:false,msg:'精力不足，先去休息'};
+  for(const [k,v] of Object.entries(r.in)) if((s.inventory[k]||0) < v) return {ok:false,msg:`缺少原料：${GOODS[k].name}`};
+  if(!canSpendTime(s,r.minutes)) return {ok:false,msg:'今天太晚了'};
+  for(const [k,v] of Object.entries(r.in)) s.inventory[k] = clamp(s.inventory[k]-v,0,CAP.qty);
+  s.inventory[r.out] = clamp((s.inventory[r.out]||0)+r.qty,0,CAP.qty);
+  s.energy = clamp(s.energy-r.energy,0,CAP.energy);
+  advanceTime(s,r.minutes);
+  s.stats.produced += r.qty;
+  ledgerAdd(s,'produce',r.out,r.qty,0,`生产 ${GOODS[r.out].name} ×${r.qty}`);
+  return {ok:true,msg:`${r.name}完成 → ${GOODS[r.out].name} ×${r.qty}`};
+}
+function rentStall(s){
+  if(s.stall.rented) return {ok:false,msg:'摊位已租'};
+  if(s.cash < 30) return {ok:false,msg:'现金不足（需 ¥30）'};
+  s.cash = money(s.cash-30);
+  s.stall.rented = true;
+  ledgerAdd(s,'rent','stall',1,-30,'租下夜市摊位');
+  return {ok:true,msg:'摊位租好了，去上架商品'};
+}
+function listItem(s,item,price){
+  if(!s.stall.rented) return {ok:false,msg:'先租摊位'};
+  const g = GOODS[item];
+  if(!g || g.kind!=='product') return {ok:false,msg:'只能上架成品'};
+  if((s.inventory[item]||0)<=0) return {ok:false,msg:`没有${g.name}`};
+  price = clamp(Math.floor(price),1,999);
+  s.stall.listed = {item,price};
+  return {ok:true,msg:`上架 ${g.name}，定价 ¥${price}`};
+}
+function sellTick(s){
+  if(!s.stall.rented || !s.stall.listed) return {ok:false,msg:'未上架商品'};
+  const {item,price} = s.stall.listed;
+  const stock = s.inventory[item]||0;
+  if(stock<=0) return {ok:false,msg:'库存卖完了'};
+  if(!canSpendTime(s,30)) return {ok:false,msg:'收摊时间到了'};
+  const g = GOODS[item];
+  const intel = s.intel[item];
+  const intelMul = intel==='hot'?1.2 : intel==='cold'?0.85 : 1;
+  const ratio = price / Math.max(1,g.price*intelMul);
+  const appeal = clamp(1.3-0.6*(ratio-1),0.2,1.6);
+  const repMul = 0.6 + s.reputation/100*0.8;
+  const flow = FLOW[phaseOf(s.gameMinutes)];
+  let sold = Math.round(stock*flow*appeal*repMul*0.35);
+  sold = clamp(sold,0,stock);
+  const revenue = money(sold*price);
+  s.inventory[item] = clamp(stock-sold,0,CAP.qty);
+  s.cash = money(s.cash+revenue);
+  s.reputation = clamp(s.reputation+(ratio<=1.2?1:-2),0,CAP.reputation);
+  s.stats.sold += sold;
+  advanceTime(s,30);
+  ledgerAdd(s,'sell',item,sold,revenue,`售出 ${g.name} ×${sold}`);
+  return {ok:true,msg:`卖出 ${g.name} ×${sold}，收入 ¥${revenue}`,sold,revenue};
+}
+function doJob(s){
+  if(!canSpendTime(s,60)) return {ok:false,msg:'收摊时间到了'};
+  if(s.energy < 10) return {ok:false,msg:'精力太低，先休息'};
+  let pay = 45 + s.skill*10 + Math.round(s.reputation*0.1);
+  if(s.energy<20) pay = Math.round(pay*0.5);
+  pay = money(pay);
+  s.cash = money(s.cash+pay);
+  s.energy = clamp(s.energy-20,0,CAP.energy);
+  s.reputation = clamp(s.reputation+1,0,CAP.reputation);
+  s.stats.jobs++;
+  advanceTime(s,60);
+  ledgerAdd(s,'job','job',1,pay,'零工收入');
+  return {ok:true,msg:`打零工赚了 ¥${pay}`,pay};
+}
+function rest(s,kind){
+  const minutes = kind==='sleep'?120:30;
+  const gain = kind==='sleep'?60:25;
+  if(!canSpendTime(s,minutes)) return {ok:false,msg:'没时间休息了'};
+  s.energy = clamp(s.energy+gain,0,CAP.energy);
+  advanceTime(s,minutes);
+  return {ok:true,msg:`精力 +${gain}，现在 ${s.energy}`};
+}
+function eat(s){
+  if((s.inventory.bread||0)<=0) return {ok:false,msg:'没有面包'};
+  if(!canSpendTime(s,10)) return {ok:false,msg:'收摊时间到了'};
+  s.inventory.bread--;
+  s.energy = clamp(s.energy+20,0,CAP.energy);
+  advanceTime(s,10);
+  return {ok:true,msg:'吃了个面包，精力 +20'};
+}
+function talk(s,npcId,action){
+  const n = NPCS.find(x=>x.id===npcId);
+  if(!n) return {ok:false,msg:'没有这个人'};
+  if(!canSpendTime(s,10)) return {ok:false,msg:'收摊时间到了'};
+  let msg='';
+  if(action==='greet'){
+    s.affinity[npcId] = clamp((s.affinity[npcId]||0)+2,-100,100);
+    s.energy = clamp(s.energy-2,0,CAP.energy);
+    msg = `和${n.name}打了招呼，好感度 +2`;
+  }else if(action==='intel'){
+    s.affinity[npcId] = clamp((s.affinity[npcId]||0)-1,-100,100);
+    const item = n.need[0];
+    const roll = (s.gameMinutes + npcId.length*7) % 3;
+    s.intel[item] = roll===0?'hot' : roll===1?'normal':'cold';
+    msg = `${n.name}透露：${GOODS[item].name}今日${s.intel[item]==='hot'?'紧俏':s.intel[item]==='cold'?'积压':'平稳'}`;
+  }else if(action==='help'){
+    s.affinity[npcId] = clamp((s.affinity[npcId]||0)+5,-100,100);
+    s.energy = clamp(s.energy-5,0,CAP.energy);
+    if((s.affinity[npcId]||0)>=10){
+      const gift = n.need[0];
+      s.inventory[gift] = clamp((s.inventory[gift]||0)+1,0,CAP.qty);
+      msg = `${n.name}送你一份${GOODS[gift].name}，好感 +5`;
+    }else{
+      msg = `帮了${n.name}的忙，好感度 +5`;
+    }
+  }else return {ok:false,msg:'未知互动'};
+  s.stats.talks++;
+  advanceTime(s,10);
+  return {ok:true,msg};
+}
+function tradeWithNpc(s,npcId,item,side,qty){
+  const n = NPCS.find(x=>x.id===npcId);
+  if(!n) return {ok:false,msg:'没有这个人'};
+  if(!n.need.includes(item)) return {ok:false,msg:`${n.name}不收/不卖这个`};
+  qty = clamp(Math.floor(qty),1,CAP.qty);
+  const g = GOODS[item];
+  const aff = s.affinity[npcId]||0;
+  if(!canSpendTime(s,10)) return {ok:false,msg:'收摊时间到了'};
+  if(side==='buy'){
+    const unit = Math.max(1,Math.round(g.price*clamp(1-aff*0.01,0.75,1.25)));
+    const total = unit*qty;
+    if(total>s.cash) return {ok:false,msg:'现金不足'};
+    s.cash = money(s.cash-total);
+    s.inventory[item] = clamp((s.inventory[item]||0)+qty,0,CAP.qty);
+    advanceTime(s,10);
+    ledgerAdd(s,'npc_buy',item,qty,-total,`向${n.name}买入 ${g.name} ×${qty}`);
+    return {ok:true,msg:`向${n.name}买入 ${g.name} ×${qty}，花 ¥${total}`};
+  }
+  if(side==='sell'){
+    if((s.inventory[item]||0)<qty) return {ok:false,msg:`${g.name}不够`};
+    const unit = Math.max(1,Math.round(g.price*clamp(1+aff*0.01,0.75,1.25)));
+    const total = money(unit*qty);
+    s.inventory[item] = clamp(s.inventory[item]-qty,0,CAP.qty);
+    s.cash = money(s.cash+total);
+    advanceTime(s,10);
+    ledgerAdd(s,'npc_sell',item,qty,total,`卖给${n.name} ${g.name} ×${qty}`);
+    return {ok:true,msg:`卖给${n.name} ${g.name} ×${qty}，得 ¥${total}`};
+  }
+  return {ok:false,msg:'未知交易方向'};
+}
+function inventoryValue(s){
+  let v = 0;
+  for(const [k,g] of Object.entries(GOODS)) v += (s.inventory[k]||0)*g.price;
+  return money(v);
+}
+function netWorth(s){ return money(s.cash + inventoryValue(s)); }
+function endingOf(s){
+  const net = money(s.cash + inventoryValue(s) - s.startCash);
+  if(net < -200) return '入不敷出，明天得换个活法';
+  if(net < 50) return '刚好够花，平凡却踏实';
+  if(net < 300) return '小有结余，难得轻松一天';
+  return '生意兴隆，今天赚到了';
+}
+// 确定性自测：覆盖数值守恒、上限、拒绝条件、时段
+function selfTest(){
+  const T=[]; const ok=(name,cond,detail='')=>T.push({name,pass:!!cond,detail});
+  ok('现金上限',money(1e12)<=CAP.cash,`money(1e12)=${money(1e12)}`);
+  ok('现金下限',money(-1e12)>=-CAP.cash,`money(-1e12)=${money(-1e12)}`);
+  const s=makeState({city:'测试',job:'测试',home:'测试'},2); s.inventory.flour=3;
+  const pr=produce(s,'bread');
+  ok('生产成功',pr.ok,pr.msg);
+  ok('生产原料守恒',s.inventory.flour===2&&s.inventory.bread===1,`flour=${s.inventory.flour},bread=${s.inventory.bread}`);
+  ok('生产时间推进',s.gameMinutes===CAP.startMinute+30,`t=${s.gameMinutes}`);
+  const s2=makeState(null,1); s2.inventory.flour=0;
+  ok('原料不足拒绝',!produce(s2,'bread').ok);
+  ok('拒绝后库存不变',s2.inventory.bread===0);
+  const s3=makeState(null,1); s3.cash=100;
+  const br=buy(s3,'flour',5);
+  ok('进货成功',br.ok,br.msg);
+  ok('进货现金守恒',s3.cash===75,`cash=${s3.cash}`);
+  ok('进货入库',s3.inventory.flour===5);
+  ok('账本记账',s3.ledger.length===1);
+  const s4=makeState(null,1); s4.cash=0;
+  ok('钱不够拒绝进货',!buy(s4,'flour',1).ok);
+  const s5=makeState(null,1); s5.cash=1e9; buy(s5,'flour',99999);
+  ok('数量上限',s5.inventory.flour<=CAP.qty,`flour=${s5.inventory.flour}`);
+  const s6=makeState(null,1); s6.gameMinutes=CAP.endMinute-10; advanceTime(s6,60);
+  ok('时间封顶22:00',s6.gameMinutes===CAP.endMinute&&s6.finished,`t=${s6.gameMinutes},finished=${s6.finished}`);
+  const s7=makeState(null,1); s7.energy=5; rest(s7,'sleep');
+  ok('精力上限',s7.energy===65&&s7.energy<=CAP.energy,`energy=${s7.energy}`);
+  const s8=makeState(null,1); s8.inventory.bread=2; eat(s8);
+  ok('吃面包精力+20',s8.energy===100&&s8.inventory.bread===1,`e=${s8.energy},bread=${s8.inventory.bread}`);
+  const s9=makeState(null,1); s9.affinity.wang=0; talk(s9,'wang','greet');
+  ok('打招呼好感+2',s9.affinity.wang===2,`aff=${s9.affinity.wang}`);
+  const s10=makeState(null,1); s10.cash=100; tradeWithNpc(s10,'li','goods','buy',3);
+  ok('NPC买入扣款',s10.cash===76&&s10.inventory.goods===3,`cash=${s10.cash},goods=${s10.inventory.goods}`);
+  const s11=makeState(null,1); s11.inventory.bread=0;
+  ok('没货拒绝吃',!eat(s11).ok);
+  const s12=makeState(null,1); s12.cash=500; rentStall(s12);
+  ok('租摊扣款30',s12.cash===470&&s12.stall.rented,`cash=${s12.cash}`);
+  return T;
+}
+/* ==================== PURE LOGIC END ==================== */
+
+// ===== 界面层 UI =====
+let S=null, tab='scene', panelNpc=null, panelPlace=null;
+const $=id=>document.getElementById(id);
+const LS_KEY='citysim_v2_state';
+
 function tick(){
-  const d=new Date();
-  const p=n=>String(n).padStart(2,'0');
-  document.getElementById('clock').textContent=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  const d=new Date(); const p=n=>String(n).padStart(2,'0');
+  $('clock').textContent=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
 }
 setInterval(tick,1000); tick();
 
-// ===== 随机事件卡（本地生活细节，不建模、不联网）=====
+function fmtTime(min){
+  const h=Math.floor(min/60), m=min%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+function toast(msg){
+  const t=document.createElement('div'); t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t); setTimeout(()=>t.remove(),2200);
+}
+function save(){ try{ localStorage.setItem(LS_KEY,JSON.stringify(S)); }catch(e){} }
+function load(){ try{ const v=localStorage.getItem(LS_KEY); return v?JSON.parse(v):null; }catch(e){ return null; } }
+function clearSave(){ try{ localStorage.removeItem(LS_KEY); }catch(e){} }
+
 const IDENT={
-  city:["二线老城","新一线新区","县城","省会郊区","工业镇"],
-  job:["便利店店员","网约车司机","实习程序员","房产中介","外卖骑手","客服","小厂文员"],
-  rent:["合租次卧","城中村单间","品牌公寓","和爸妈住"],
+  city:['二线老城','新一线新区','县城','省会郊区'],
+  job:['便利店店员','实习程序员','外卖骑手','小厂文员'],
+  home:['合租次卧','城中村单间','和爸妈住']
 };
-const EVENTS=[
-  {t:"通勤",e:["地铁挤成沙丁鱼，迟到扣了 20。", "赶上网约车拼单，省下 8 块。", "暴雨打不到车，步行 40 分钟。"]},
-  {t:"上班",e:["开会两小时，结论‘再想想’。", "独立搞定一个 bug，被夸了一句。", "临时加班，晚饭没了着落。"]},
-  {t:"交租",e:["房东催租短信，银行卡一紧。", "室友垫了半月，记了笔人情。", "押一付三到期，掏空存款。"]},
-  {t:"午饭",e:["楼下盖饭 18，加蛋 3。", "同事拼奶茶，没好意思不请。", "带了昨夜剩饭，0 元。"]},
-  {t:"下班",e:["被拉去团建，强行消费 50。", "提前溜了，去公园发呆半小时。", "接了个私活，赚 80。"]},
-  {t:"夜宵",e:["烧烤摊 35，抚慰一下。", "忍住没吃，明早胃舒服。", "便利店关东煮 12，热气腾腾。"]},
-];
 
-let S=null;
-function rnd(a){return a[Math.floor(Math.random()*a.length)]}
-function moneyDelta(s){ // 简单收支模型
-  if(s.includes("扣了"))return -20; if(s.includes("省下"))return +8;
-  if(s.includes("加班"))return -15; if(s.includes("夸了"))return +10;
-  if(s.includes("掏空"))return -600; if(s.includes("垫了"))return -150;
-  if(s.includes("盖饭"))return -18; if(s.includes("奶茶"))return -18;
-  if(s.includes("剩饭"))return 0; if(s.includes("团建"))return -50;
-  if(s.includes("溜了"))return 0; if(s.includes("私活"))return +80;
-  if(s.includes("烧烤"))return -35; if(s.includes("忍住"))return 0;
-  if(s.includes("关东煮"))return -12; if(s.includes("短信"))return -1200;
-  return 0;
+function renderIdentityOpts(){
+  const opts=$('identityOpts');
+  opts.innerHTML=`
+    <div class="opt" onclick="pickIdentity(0)"><b>城市</b><span>${IDENT.city.join(' / ')}</span></div>
+    <div class="opt" onclick="pickIdentity(1)"><b>职业</b><span>${IDENT.job.join(' / ')}</span></div>
+    <div class="opt" onclick="pickIdentity(2)"><b>居住</b><span>${IDENT.home.join(' / ')}</span></div>`;
 }
-function energyDelta(s){
-  if(s.includes("挤")||s.includes("暴雨")||s.includes("加班")||s.includes("团建"))return -12;
-  if(s.includes("夸")||s.includes("溜了")||s.includes("忍住")||s.includes("私活"))return +6;
-  return -4;
+let picked={city:IDENT.city[0],job:IDENT.job[0],home:IDENT.home[0]};
+function pickIdentity(k){
+  const arr=[IDENT.city,IDENT.job,IDENT.home][k];
+  const key=['city','job','home'][k];
+  picked[key]=arr[Math.floor(Math.random()*arr.length)];
+  toast(`已随机：${picked[key]}`);
+}
+function startGame(){
+  S=makeState({...picked}, 1+Math.floor(Math.random()*2));
+  S.log.unshift('你租下了出租屋，揣着 500 块，开始这一天。');
+  $('intro').classList.add('hidden'); $('game').classList.remove('hidden');
+  save(); renderAll();
+}
+function resetGame(){ clearSave(); location.reload(); }
+
+function switchTab(name){
+  tab=name;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.tab===name));
+  ['scene','bag','ledger','people'].forEach(n=>$('tab'+n[0].toUpperCase()+n.slice(1)).classList.toggle('hidden',n!==name));
+  renderAll();
+}
+function renderAll(){
+  if(!S) return;
+  $('sCash').textContent=S.cash; $('sEnergy').textContent=S.energy;
+  $('sSkill').textContent=S.skill; $('sRep').textContent=S.reputation;
+  $('sTime').textContent=fmtTime(S.gameMinutes);
+  const pct=Math.max(0,Math.min(100,(S.gameMinutes-CAP.startMinute)/(CAP.endMinute-CAP.startMinute)*100));
+  $('timeBar').style.width=pct+'%';
+  $('btnSettle').disabled=S.finished;
+  $('btnWait').disabled=S.finished;
+  renderScene(); renderBag(); renderLedger(); renderPeople(); renderLog();
+  if(panelNpc) renderNpcPanel(panelNpc);
+}
+function renderScene(){
+  const grid=$('grid'); grid.innerHTML='';
+  const ph=phaseOf(S.gameMinutes);
+  PLACES.forEach(p=>{
+    const d=document.createElement('div');
+    d.className='place'+(S.location===p.id?' here':'');
+    const npcsHere=NPCS.filter(n=>n.schedule[ph]===p.id);
+    d.innerHTML=`<div class="ic">${p.icon}</div><div class="nm">${p.name}</div><div class="sub">${p.sub}</div>
+      ${npcsHere.map(n=>`<span class="npc-dot" title="${n.name}·${n.job}" onclick="event.stopPropagation();openNpc('${n.id}')">${n.icon}</span>`).join('')}
+      ${S.location===p.id?'<span class="you">📍</span>':''}`;
+    d.onclick=()=>openPlace(p.id);
+    grid.appendChild(d);
+  });
+  const sc=$('scene');
+  if(S.photo){ sc.classList.add('hasphoto'); sc.style.backgroundImage=`url(${S.photo})`; }
+  else{ sc.classList.remove('hasphoto'); sc.style.backgroundImage=''; }
+}
+function renderBag(){
+  const el=$('bagList'); el.innerHTML='';
+  for(const [k,g] of Object.entries(GOODS)){
+    const qty=S.inventory[k]||0;
+    const d=document.createElement('div'); d.className='item';
+    d.innerHTML=`<div><div class="nm">${g.icon} ${g.name} <span class="sub">(基准¥${g.price})</span></div>
+      <div class="sub">${g.kind==='raw'?'原料':'成品'}${S.intel[k]?` · 情报:${S.intel[k]==='hot'?'紧俏':S.intel[k]==='cold'?'积压':'平稳'}`:''}</div></div>
+      <div class="qty">×${qty}</div>`;
+    el.appendChild(d);
+  }
+}
+function renderLedger(){
+  const el=$('ledgerList'); el.innerHTML='';
+  if(!S.ledger.length){ el.innerHTML='<div class="sub">今天还没有交易记录。</div>'; return; }
+  S.ledger.slice().reverse().forEach(r=>{
+    const d=document.createElement('div'); d.className='led';
+    const sign=r.amount>=0?'+':'-';
+    d.innerHTML=`<span class="t">${fmtTime(r.t)}</span><span class="n">${r.note}</span>
+      <span class="a ${r.amount>=0?'plus':'minus'}">${sign}¥${Math.abs(r.amount)}</span>`;
+    el.appendChild(d);
+  });
+}
+function renderPeople(){
+  const el=$('peopleList'); el.innerHTML='';
+  NPCS.forEach(n=>{
+    const aff=S.affinity[n.id]||0;
+    const ph=phaseOf(S.gameMinutes); const loc=PLACES.find(p=>p.id===n.schedule[ph]);
+    const d=document.createElement('div'); d.className='npc-card';
+    d.innerHTML=`<div class="av">${n.icon}</div>
+      <div class="info"><b>${n.name} <span class="sub">· ${n.job} / ${n.industry}</span></b>
+      <div class="sub">${n.trait} · 现在在${loc?loc.name:'街上'} · <span class="heart">♥${aff}</span></div></div>
+      <button class="ghost mini" onclick="openNpc('${n.id}')">对话</button>`;
+    el.appendChild(d);
+  });
+}
+function renderLog(){
+  $('log').innerHTML=S.log.slice(0,6).map(x=>`· ${x}`).join('<br>');
+}
+function apply(r){
+  if(r.ok){ S.log.unshift(r.msg); toast(r.msg); save(); renderAll(); if(panelPlace) openPlace(panelPlace); }
+  else { toast(r.msg); }
 }
 
-function start(){
-  S={
-    city:rnd(IDENT.city), job:rnd(IDENT.job), rent:rnd(IDENT.rent),
-    cash: Math.floor(Math.random()*2000)+300,
-    energy:100, i:0, log:[]
+// 场所操作
+function openPlace(id){
+  panelNpc=null; panelPlace=id;
+  S.location=id; save(); renderScene();
+  const p=PLACES.find(x=>x.id===id);
+  const el=$('panel');
+  let html=`<span class="close" onclick="panelPlace=null;$('panel').innerHTML=''">×</span><div class="panel-title">${p.icon} ${p.name}</div><div class="panel-desc">${p.sub} · 当前 ${PHASE_NAME[phaseOf(S.gameMinutes)]}</div><div class="opts">`;
+  if(p.type==='rest'){
+    if(id==='home') html+=`<div class="opt" onclick="apply(rest(S,'sleep'))"><b>😴 睡觉</b><span>+60精力 / 120分钟</span></div>`;
+    html+=`<div class="opt" onclick="apply(rest(S,'walk'))"><b>🚶 散步</b><span>+25精力 / 30分钟</span></div>`;
+  }else if(p.type==='job'){
+    html+=`<div class="opt" onclick="apply(doJob(S))"><b>🧰 打零工</b><span>约¥55-80 / 60分钟</span></div>`;
+  }else if(p.type==='shop'){
+    for(const k of ['flour','goods','material'])
+      html+=`<div class="opt" onclick="apply(buy(S,'${k}',5))"><b>📦 进5份${GOODS[k].name}</b><span>¥${GOODS[k].price}×5 / 10分钟</span></div>`;
+  }else if(p.type==='produce'){
+    RECIPES.filter(r=>r.place===id).forEach(r=>{
+      html+=`<div class="opt" onclick="apply(produce(S,'${r.id}'))"><b>⚙️ ${r.name}</b><span>${Object.entries(r.in).map(([k,v])=>v+GOODS[k].name).join('+')} → ${GOODS[r.out].name} / ${r.minutes}分</span></div>`;
+    });
+    if(!RECIPES.some(r=>r.place===id)) html+=`<div class="opt"><b>暂无配方</b><span>这里还没有可生产的项目</span></div>`;
+  }else if(p.type==='stall'){
+    if(!S.stall.rented) html+=`<div class="opt" onclick="apply(rentStall(S))"><b>🎪 租摊位</b><span>¥30 / 一次性</span></div>`;
+    else{
+      for(const k of ['bread','giftbox','content']){
+        if((S.inventory[k]||0)>0)
+          html+=`<div class="opt" onclick="apply(listItem(S,'${k}',${GOODS[k].price+2}))"><b>🏷️ 上架${GOODS[k].name}</b><span>定价 ¥${GOODS[k].price+2}</span></div>`;
+      }
+      if(S.stall.listed) html+=`<div class="opt" onclick="apply(sellTick(S))"><b>💰 迎客售卖</b><span>已上架 ${GOODS[S.stall.listed.item].name} ¥${S.stall.listed.price} / 30分钟</span></div>`;
+    }
+  }
+  html+='</div>'; el.innerHTML=html;
+}
+function openNpc(id){
+  panelNpc=id; panelPlace=null; switchTab('scene');
+  const el=$('panel'); const n=NPCS.find(x=>x.id===id);
+  const loc=PLACES.find(p=>p.id===n.schedule[phaseOf(S.gameMinutes)]);
+  el.innerHTML=`<span class="close" onclick="panelNpc=null;$('panel').innerHTML=''">×</span>
+    <div class="bubble"><div class="who">${n.icon} ${n.name} · ${n.job}</div>
+    <div>${n.greet}</div><div class="aff">现在在${loc?loc.name:'街上'} · 好感度 ♥${S.affinity[id]} · ${n.trait}</div></div>
+    <div class="opts">
+      <div class="opt" onclick="doTalk('greet')"><b>👋 打招呼</b><span>好感 +2 / 10分钟</span></div>
+      <div class="opt" onclick="doTalk('intel')"><b>👂 打听行情</b><span>获得价格情报 / 10分钟</span></div>
+      <div class="opt" onclick="doTalk('help')"><b>🤝 帮忙</b><span>好感 +5 / 10分钟</span></div>
+      <div class="opt" onclick="renderTrade()"><b>💱 交易</b><span>买卖 ${n.need.map(k=>GOODS[k].name).join('/')}</span></div>
+    </div><div id="tradeBox"></div>`;
+}
+function doTalk(action){ const r=talk(S,panelNpc,action); if(r.ok){ S.log.unshift(r.msg); toast(r.msg); save(); renderAll(); openNpcRefresh(); } else toast(r.msg); }
+function openNpcRefresh(){ panelNpc && renderNpcPanel(panelNpc); }
+function renderNpcPanel(id){
+  const n=NPCS.find(x=>x.id===id); if(!n) return;
+  const el=$('panel'); if(!el.innerHTML.includes(n.name)) return;
+  const affEl=el.querySelector('.aff'); if(affEl) affEl.textContent=`现在在${PLACES.find(p=>p.id===n.schedule[phaseOf(S.gameMinutes)])?.name||'街上'} · 好感度 ♥${S.affinity[id]} · ${n.trait}`;
+}
+function renderTrade(){
+  const n=NPCS.find(x=>x.id===panelNpc);
+  const box=$('tradeBox'); if(!box) return;
+  box.innerHTML=`<div class="panel-desc" style="margin-top:10px">与${n.name}交易（好感度影响价格）</div><div class="opts">`+
+    n.need.map(k=>`<div class="opt" onclick="doTrade('${k}','buy')"><b>买入 ${GOODS[k].name}</b><span>1份 / 10分钟</span></div>
+      <div class="opt" onclick="doTrade('${k}','sell')"><b>卖出 ${GOODS[k].name}</b><span>持有 ×${S.inventory[k]||0}</span></div>`).join('')+'</div>';
+}
+function doTrade(item,side){
+  const r=tradeWithNpc(S,panelNpc,item,side,1);
+  if(r.ok){ S.log.unshift(r.msg); toast(r.msg); save(); renderAll(); renderTrade(); renderNpcPanel(panelNpc); }
+  else toast(r.msg);
+}
+
+// 全局操作
+function opEat(){ const r=eat(S); if(r.ok){S.log.unshift(r.msg);toast(r.msg);save();renderAll();}else toast(r.msg); }
+function opWait(){
+  if(S.stall.rented && S.stall.listed){
+    const r=sellTick(S);
+    if(r.ok){S.log.unshift('等待半小时，'+r.msg);toast(r.msg);save();renderAll();return;}
+  }
+  const r=rest(S,'walk');
+  if(r.ok){S.log.unshift('稍等片刻，'+r.msg);toast(r.msg);save();renderAll();}else toast(r.msg);
+}
+function opRest(){ const r=rest(S,'walk'); apply(r); }
+function opSettle(){ S.finished=true; save(); showEnd(); }
+
+function showEnd(){
+  $('game').classList.add('hidden'); $('end').classList.remove('hidden');
+  const inv=inventoryValue(S), net=money(S.cash+inv-S.startCash);
+  $('rIdentity').textContent=`${S.identity.city} · ${S.identity.job} · ${S.identity.home}`;
+  $('rCash').textContent=`¥${S.cash}`; $('rInv').textContent=`¥${inv}`;
+  $('rNet').textContent=`${net>=0?'+¥':'-¥'}${Math.abs(net)}`;
+  $('rStats').textContent=`生产${S.stats.produced}件 / 售出${S.stats.sold}件 / 打工${S.stats.jobs}次 / 交谈${S.stats.talks}次`;
+  $('rEnd').textContent=endingOf(S);
+  $('shareText').textContent=`我在「城市模拟器」是${S.identity.city}的${S.identity.job}，一天下来净收益 ${net>=0?'+¥':'-¥'}${Math.abs(net)} —— 来体验你的一天？`;
+  save();
+}
+
+// 照片：压缩后仅存本机，不读 EXIF/GPS，不上传
+function onPhotoChange(e){
+  const f=e.target.files&&e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    const img=new Image();
+    img.onload=()=>{
+      const max=900; const scale=Math.min(1,max/Math.max(img.width,img.height));
+      const w=Math.max(1,Math.round(img.width*scale)), h=Math.max(1,Math.round(img.height*scale));
+      const c=document.createElement('canvas'); c.width=w; c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      try{ S.photo=c.toDataURL('image/jpeg',0.7); save(); renderScene(); toast('照片已设为街景，仅存本机'); }
+      catch(err){ toast('照片处理失败：'+err.message); }
+      e.target.value='';
+    };
+    img.onerror=()=>{toast('照片读取失败');e.target.value='';};
+    img.src=ev.target.result;
   };
-  // 房租基线
-  const rentCost={ "合租次卧":800,"城中村单间":500,"品牌公寓":2200,"和爸妈住":0 }[S.rent];
-  S.rentCost=rentCost; S.cash-=Math.floor(rentCost/30); // 日均摊
-  document.getElementById('intro').classList.add('hidden');
-  document.getElementById('play').classList.remove('hidden');
-  document.getElementById('log').innerHTML='';
-  next(true);
+  r.onerror=()=>toast('照片读取失败');
+  r.readAsDataURL(f);
 }
-function next(first){
-  if(!first) S.i++;
-  if(S.i>=EVENTS.length){ return finish(); }
-  const ev=EVENTS[S.i];
-  const txt=rnd(ev.e);
-  S.cash+=moneyDelta(txt); S.energy=Math.max(0,S.energy+energyDelta(txt));
-  S.log.unshift(`【${ev.t}】${txt}`);
-  document.getElementById('stageName').textContent=ev.t;
-  document.getElementById('eventText').textContent=txt;
-  document.getElementById('cash').textContent=S.cash;
-  document.getElementById('energy').textContent=S.energy;
-  document.getElementById('phase').textContent=`第 ${S.i+1} / ${EVENTS.length} 步`;
-  document.getElementById('bar').style.width=`${Math.round((S.i+1)/EVENTS.length*100)}%`;
-  document.getElementById('log').innerHTML=S.log.slice(0,6).map(x=>`· ${x}`).join('<br>');
-}
-function finish(){
-  document.getElementById('play').classList.add('hidden');
-  document.getElementById('end').classList.remove('hidden');
-  const gap=S.rentCost - S.cash;
-  document.getElementById('rIdentity').textContent=`${S.city} · ${S.job} · ${S.rent}`;
-  document.getElementById('rCash').textContent=`¥${S.cash}`;
-  document.getElementById('rGap').textContent= gap>0?`还差 ¥${gap}`:`盈余 ¥${-gap}`;
-  let ending = S.cash<0 ? "月底入不敷出，下月继续熬" : (S.cash>1500?"小有结余，难得轻松一天":"刚好够花，平凡却踏实");
-  document.getElementById('rEnd').textContent=ending;
-  document.getElementById('shareText').textContent=
-    `我在「城市一日」是${S.city}的${S.job}，一天下来现金¥${S.cash} —— 来测测你的命？`;
-}
+function clearPhoto(){ if(S){S.photo=null;save();renderScene();toast('照片已清除');} }
+
+// 启动：优先恢复本机存档
+(function init(){
+  renderIdentityOpts();
+  const st=load();
+  if(st && !st.finished){ S=st; $('intro').classList.add('hidden'); $('game').classList.remove('hidden'); renderAll(); toast('已恢复上次进度'); }
+  else if(st && st.finished){ S=st; $('intro').classList.add('hidden'); showEnd(); toast('已恢复上次结算'); }
+  const T=selfTest();
+  const fail=T.filter(x=>!x.pass);
+  console.table(T);
+  console.log(`[城市模拟器V2] 自测 ${T.length-fail.length}/${T.length} PASS`, fail.length?fail:'全通过');
+  window.__SELFTEST__=T;
+})();
 </script>
 </body>
 </html>
